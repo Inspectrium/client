@@ -24,3 +24,14 @@ The client will instead send an array of links/link to the server and then recie
 # Note
 
 Backend will be in this repo until we separate it when Andres comes online
+
+Backend algo
+Input: Link from youtube
+
+1. Download the video from youtube
+2. Open up a video capture thread on the backend loading all the frames
+3. On each loaded frame determine the brightness of all frames, cluster all the similiar brightness and contracts together in "scenes" 
+4. If there are three scene changes in one second, label the video with a warning.
+5. Return 200 once completed 
+
+Output: Boolean `isWarning`
