@@ -1,29 +1,42 @@
-import cv2
 
-cap = cv2.VideoCapture("./out.mp4")
-while not cap.isOpened():
-    cap = cv2.VideoCapture("./out.mp4")
-    cv2.waitKey(1000)
-    print("Wait for the header")
+from flask import Flask
+from flask import request
+from pytube import YouTube
 
-pos_frame = cap.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)
-while True:
-    flag, frame = cap.read()
-    if flag:
-        # The frame is ready and already captured
-        cv2.imshow('video', frame)
-        pos_frame = cap.get(cv2.cv.CV_CAP_PROP_POS_FRAMES)
-        print(str(pos_frame)+" frames")
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello_world():
+    return 'Hello, World!'
+
+@app.route('/youtube', methods=['GET', 'POST'])
+def youtube_dl():
+    if request.method == 'POST':
+        print("This is a post")
+        yt = YouTube('https://www.youtube.com/watch?v=9bZkp7q19f0', on_progress_callback=progress_function, on_complete_callback=print("Done"))
+        # In a perfect would this would come from the post request
+        stream = yt.streams.filter(file_extension='mp4', fps='30', res="480p").first()
+        stream.download('/tmp')
     else:
-        # The next frame is not ready, so we try to read it again
-        cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, pos_frame-1)
-        print("frame is not ready")
-        # It is better to wait for a while for the next frame to be ready
-        cv2.waitKey(1000)
+        print("This is a get")
+        yt = YouTube('https://www.youtube.com/watch?v=9bZkp7q19f0')
+        title = yt.title
+        print("Now downloading,  " + str(title))
+        # In a perfect would this would come from the post request
+        stream = yt.streams.filter(file_extension='mp4', res="480p").first()
+        print('FileSize : ' + str(round(stream.filesize/(1024*1024))) + 'MB')
 
-    if cv2.waitKey(10) == 27:
-        break
-    if cap.get(cv2.cv.CV_CAP_PROP_POS_FRAMES) == cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT):
-        # If the number of captured frames is equal to the total number of frames,
-        # we stop
-        break
+        if stream:
+            print("Printing")
+            stream.download()
+        return "OOP OOP OOP OOP OOPA GANGNAM"
+
+def progress_function(self,stream, chunk,file_handle, bytes_remaining):
+
+    total = stream.filesize
+    p = 0
+    while p <= 100:
+        progress = p
+        print(str(p)+'%')
+
